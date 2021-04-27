@@ -7,6 +7,9 @@ name = "pypi"
 numpy = "*"
 scipy = "*"
 matplotlib = "*"
+scikit-dimension = "*"
+pandas = "*"
+numba = "*"
 
 [dev-packages]
 
