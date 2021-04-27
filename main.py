@@ -45,3 +45,14 @@ if __name__ == "__main__":
 	cov (np.ndarray of np.float64)
 	"""
 	cov = 1/(N - 1) * np.dot(centered, centered.T)
+
+	"""
+	Eigenvalues and Eigenvectors
+	
+	Variables:
+	eigval (np.ndarray of): Eigenvalues 
+	eigvec (np.ndarray of): Eigenvectors
+	"""
+	eigval, eigvec = np.linalg.eig(cov)
+
+	print(f"{type(eigval[0])}, {type(eigvec[0])}")
