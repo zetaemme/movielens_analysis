@@ -7,6 +7,8 @@
 from utils.read import read_fvecs
 
 import numpy as np
+from matplotlib import pyplot as plt
+#from numba import jit
 
 if __name__ == "__main__":
 	fv = read_fvecs("data/siftsmall_base.fvecs")
@@ -50,9 +52,47 @@ if __name__ == "__main__":
 	Eigenvalues and Eigenvectors
 	
 	Variables:
-	eigval (np.ndarray of): Eigenvalues 
-	eigvec (np.ndarray of): Eigenvectors
+	eigval (np.ndarray of np.complex128): Eigenvalues 
+	eigvec (np.ndarray of np.ndarray of np.complex128): Eigenvectors
 	"""
-	eigval, eigvec = np.linalg.eig(cov)
+	eigval, eigvec = np.linalg.eigvals(cov)
 
-	print(f"{type(eigval[0])}, {type(eigvec[0])}")
+	"""
+	Diagonal of eigvec
+	"""
+	eigvec = np.diag(eigvec)
+
+	"""
+	Eigenvalues sorting
+	
+	Variables:
+	ind (np.ndarray of np.int64): Sorting index
+	rev_eigvec (np.ndarray of np.ndarray of np.complex128): Reversed eigenvectors
+	"""
+	ind = np.argsort(eigvec)
+
+	eigvec = np.sort(eigvec)
+	rev_eigvec = eigvec[::1]
+
+	"""
+	Sorting eigenvalues
+	"""
+	eigval = np.partition(eigval, ind)
+
+	"""
+	Select and project the "largest" eigenvector
+	
+	largest (np.complex128): Largest eigenvector
+	proj (np.ndarray of np.complex128): Projection of the values on the new axes
+	"""
+	largest = eigval[1]
+
+	proj = np.dot(largest.T, centered)
+
+	"""
+	Plotting
+	"""
+	plt.title("1D Projection")
+	plt.plot(proj)
+
+	plt.show()
