@@ -10,6 +10,7 @@ matplotlib = "*"
 scikit-dimension = "*"
 pandas = "*"
 numba = "*"
+findspark = "*"
 
 [dev-packages]
 

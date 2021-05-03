@@ -8,45 +8,18 @@ from utils.read import read_fvecs
 
 import numpy as np
 from matplotlib import pyplot as plt
-#from numba import jit
 
 if __name__ == "__main__":
-	fv = read_fvecs("data/siftsmall_base.fvecs")
+	dataset = read_fvecs("data/siftsmall_base.fvecs")
 
 	"""
-	Gets the dimensions from the dataset
-	
-	Variables:
-	N (int): Size of the dataset
-	dim (int): Starting dimensionality
-	"""
-	N, dim = fv.shape
-
-	"""
-	Dataset's mean
+	Dataset's mean and covariance
 	
 	Variables:
 	mean (np.float32)
 	"""
-	mean = np.mean(fv)
-
-	"""
-	Centering
-	
-	Variables:
-	h (np.ndarray of np.float64): 1xN Matrix used for centering purposes
-	centered (np.ndarray of np.float64): Centered dataset
-	"""
-	h = np.ones((N, 1))
-	centered = np.subtract(fv, (mean * h))
-
-	"""
-	Covariance matrix
-	
-	Variables:
-	cov (np.ndarray of np.float64)
-	"""
-	cov = 1/(N - 1) * np.dot(centered, centered.T)
+	mean = np.mean(dataset, axis=0)
+	cov = np.cov(dataset, dtype=np.float32)
 
 	"""
 	Eigenvalues and Eigenvectors
@@ -55,44 +28,29 @@ if __name__ == "__main__":
 	eigval (np.ndarray of np.complex128): Eigenvalues 
 	eigvec (np.ndarray of np.ndarray of np.complex128): Eigenvectors
 	"""
-	eigval, eigvec = np.linalg.eigvals(cov)
-
-	"""
-	Diagonal of eigvec
-	"""
-	eigvec = np.diag(eigvec)
-
-	"""
-	Eigenvalues sorting
-	
-	Variables:
-	ind (np.ndarray of np.int64): Sorting index
-	rev_eigvec (np.ndarray of np.ndarray of np.complex128): Reversed eigenvectors
-	"""
-	ind = np.argsort(eigvec)
-
-	eigvec = np.sort(eigvec)
-	rev_eigvec = eigvec[::1]
+	eigval, eigvec = np.linalg.eig(cov)
 
 	"""
 	Sorting eigenvalues
 	"""
-	eigval = np.partition(eigval, ind)
+	pairs = [(np.abs(eigval[i]), eigvec[:, i]) for i in range(len(eigval))]
+	pairs.sort(key=lambda k: k[0], reverse=True)
 
 	"""
-	Select and project the "largest" eigenvector
-	
-	largest (np.complex128): Largest eigenvector
-	proj (np.ndarray of np.complex128): Projection of the values on the new axes
+	Getting the PCs at a given threshold 
 	"""
-	largest = eigval[1]
+	total = sum(eigval)
 
-	proj = np.dot(largest.T, centered)
+	var_exp = [(i/total) for i in sorted(eigval, reverse=True)]
+	cum_var_exp = np.cumsum(var_exp)
 
 	"""
-	Plotting
+	Projecting the 5/8 best PC
 	"""
-	plt.title("1D Projection")
-	plt.plot(proj)
-
-	plt.show()
+	w = np.hstack((
+		pairs[0][1][:, np.newaxis],
+		pairs[1][1][:, np.newaxis],
+		pairs[2][1][:, np.newaxis],
+		pairs[3][1][:, np.newaxis],
+		pairs[4][1][:, np.newaxis],
+	))
