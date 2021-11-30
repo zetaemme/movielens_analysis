@@ -130,6 +130,7 @@ dmypy.json
 
 # VS Code
 .vscode
+spark-warehouse
 
 # PyCharm
 .idea
@@ -137,3 +138,6 @@ dmypy.json
 
 # Data
 data
+
+# MacOS
+.DS_Store
