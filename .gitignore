@@ -137,7 +137,7 @@ spark-warehouse
 *.iml
 
 # Data
-data
+data/*.dat
 
 # MacOS
 .DS_Store
