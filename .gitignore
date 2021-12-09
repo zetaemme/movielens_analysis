@@ -141,3 +141,18 @@ data/*.dat
 
 # MacOS
 .DS_Store
+
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+report/*.fdb_latexmk

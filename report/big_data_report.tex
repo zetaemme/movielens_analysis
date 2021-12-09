@@ -1,0 +1,88 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{hyperref}
+
+\hypersetup{hidelinks}
+
+\begin{document}
+    \clearpage
+
+    \begin{titlepage}
+        \centering
+        \vspace*{\fill}
+        {\scshape\LARGE Università degli Studi di Verona \par}
+        \vspace{1.5cm}
+        \line(1,0){110} \\
+        {\huge\bfseries Big Data \par}
+        \line(1,0){110} \\
+        \vspace{0.5cm}
+        {\scshape\LARGE Report del progetto \par}
+        \vspace{2cm}
+        {\Large\itshape Mattia Zorzan - VR464472 \par}
+        \vspace{1cm}
+
+        \vspace{5cm}
+        \vspace*{\fill}
+        {\large \today \par}
+    \end{titlepage}
+    \thispagestyle{empty}
+    \newpage
+    \tableofcontents
+    \thispagestyle{empty}
+    \newpage
+    \section{Descrizione del Progetto}
+        Il progetto si propone di eseguire alcune interrogazioni sul dataset \href{https://grouplens.org/datasets/movielens/}{MovieLens}. Nello specifico queste vengono eseguite sulla variante \textbf{MovieLens 1M}, di dimensione minore.\\
+        Di seguito un elenco delle interrogazioni richieste:
+        \begin{itemize}
+            \item \textbf{EXPLORATORY ANALYSIS}
+                  \begin{itemize}
+                    \item \textit{Number of ratings} for each \textbf{movie} (and its \textit{distribution})
+                    \item \textit{Number of ratings} for each \textbf{user} (and its \textit{distribution})
+                    \item \textit{Average} score received by each \textbf{movie}
+                    \item \textit{Average} score given by each \textbf{user}
+                    \item Top \textbf{K} \textit{movies} with at least \textbf{R} \textit{ratings}
+                  \end{itemize}
+            \item \textbf{ADVANCED QUERIES}
+                  \begin{itemize}
+                    \item Find if there is a \textit{correlation} between the \textit{standard deviation} of the ratings a movie has received, and the \textit{number of ratings}
+                    \item Find the \textit{evolution over time} (with a granularity of \textbf{N} months) of the \textit{number of ratings} and the \textit{average rating}: do high rated movies maintain their ratings? Are low rated movies “abandoned” after a while?
+                    \item Find how the \textit{text} of each movie changes as we progressively \textbf{remove} the ratings from users that rated more and more movies. For instance, we can identify \textit{different groups of users} (who rated less than 10 movies, who rated between 11 and 30 movies, ...) and we can compute the \textit{average rating} considering all the groups, then only the groups of users with at least 11 ratings, and so forth
+                    \item Is it possible to identify \textit{groups of similar movies} based on the ratings they received from the users? For instance, if movies \texttt{m1} and \texttt{m2} have both obtained 5 stars from users \texttt{u1} and \texttt{u2}, they may be considered similar
+                  \end{itemize}
+        \end{itemize}
+        Si poteva scegliere se esguire tutte le interrogazioni oppure solo un sottinsieme di esse.
+
+    \newpage
+    \section{Descrizione delle Interrogazioni}
+    Per comodità, in questo report è stata omessa la descrizione delle soluzioni per l'\textit{exploratory analysis}, verranno trattate solo le \textit{advanced queries}.
+    \subsection{Query 1}
+        Per dimostrare la correlazione tra \textit{standard deviation} ed il numero dei \textit{ratings} si è in primo luogo ottenuto il numero di valutazioni per ogni film presente nel dataset. Limitando (in 4 \textit{DataFrame} diversi) il numero di film presi in considerazione si può a questo punto vedere come la diminuzione dei campioni presi in considerazione "\textit{ammorbidisca}" la curva. I 4 \textit{DataFrame} sono:
+        \begin{enumerate}
+            \item \textbf{1M Samples:} Prende in considerazione l'intero dataset
+            \item \textbf{100K Samples:} Prende in considerazione i primi 100.000 film del risultatio del conteggio
+            \item \textbf{100K Samples:} Prende in considerazione i primi 1.000 film del risultatio del conteggio
+            \item \textbf{100K Samples:} Prende in considerazione i primi 100 film del risultatio del conteggio
+        \end{enumerate}
+        Il campione può essere considerato "\textit{randomico}" in quanto non viene fatto alcun tipo di ordinamento sui risultati della query, che vengono già restituiti in ordine sparso.\\
+        Dal plot dei dati la forma della distribuzione potrebbe sembrare \textbf{gaussiana}, per verificare ciò è stato eseguito uno \textbf{skewness} test su tutti e 4 i \textit{DataFrame}, dando risultati nulli o negativi. Non è quindi una distribuzione normale.\\
+        Osservando l'andamento del grafico è possibile riconoscere un andamendo iperbolico, riconducibile ad una distribuzione \textbf{paretiana}. Non avendo trovato alcun test di \textit{paretianità} già implementato è stata generata una distribuzione paretiana generica tramite il metodo \href{https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genpareto.html}{\texttt{genpareto}} di \textit{scipy}. Accostando i due grafici la somiglianza risulta evidente.
+
+    \newpage
+    \subsection{Query 2}
+        Per comodità nell'analisi è stato deciso di riferirsi ai quartili, quindi \texttt{N=4}, per il calcolo delle medie. Come primo passo è stata creata una \textbf{UDF} (\textit{User Defined Function}) che andasse ad etichettare ogni riga del dataset come segue:
+        \begin{itemize}
+            \item \textbf{Q1:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} compreso tra \textit{Aprile} e \textit{Giugno 2000}
+            \item \textbf{Q2:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} compreso tra \textit{Aprile} e \textit{Giugno 2000}
+            \item \textbf{Q3:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} compreso tra \textit{Aprile} e \textit{Giugno 2000}
+            \item \textbf{Q4:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} compreso tra \textit{Gennaio} e \textit{Marzo 2001}
+            \item \textbf{Remaining:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} successivo a \textit{Aprile 2001} (compreso)
+        \end{itemize}
+        In seguito all'etichettatura delle \textit{Row} si è implementata un'ulteriore \textbf{UDF}, che andasse a valutare la "frequenza" nei quartili di appartenenza alla categoria \textbf{High Rated} o alla categoria \textbf{Low Rated}. Per differenzaiare le due classi si è deciso di utilizzare il voto a \textit{3 stelle} come threshold, se per la maggior parte dei quartili il film è etichettato come \textbf{High Rated} allora la sua etichetta "globale" sarà quella, \textbf{Low Rated} altrimenti.\\
+        In seguito a quest'operazione, possiamo vedere che in media i film etichettati come \textbf{High Rated} sono ottengono in media il doppio delle recensioni dopo l'anno rispetto agli altri.\\
+        Con la seconda cella Jupyter invece si va ad analizzare la stabilità nel numero di rating dopo l'anno.\\
+        Dallo \textit{Scatter} possiamo vedere che per entrambe le categorie c'è una tendenza all'abbandono, quasi totale per i film \textbf{Low Rated} mentre più mitigata per i film \textbf{High Rated}.\\
+        Segno evidente di questo è la grande presenza di film "apprezzati" nel range [40, 100] (pallini \textit{blu}), sono invece quasi del tutto assenti nello stesso range i film "poco apprezzati".
+\end{document}
