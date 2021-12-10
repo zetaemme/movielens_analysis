@@ -53,36 +53,68 @@
                     \item Is it possible to identify \textit{groups of similar movies} based on the ratings they received from the users? For instance, if movies \texttt{m1} and \texttt{m2} have both obtained 5 stars from users \texttt{u1} and \texttt{u2}, they may be considered similar
                   \end{itemize}
         \end{itemize}
-        Si poteva scegliere se esguire tutte le interrogazioni oppure solo un sottinsieme di esse.
+        Era possibile scegliere se esguire tutte le interrogazioni oppure solo un sottinsieme di esse.
 
     \newpage
     \section{Descrizione delle Interrogazioni}
-    Per comodità, in questo report è stata omessa la descrizione delle soluzioni per l'\textit{exploratory analysis}, verranno trattate solo le \textit{advanced queries}.
+    Per comodità, in questo report è stata omessa la descrizione delle soluzioni per l'\textit{exploratory analysis}, ritengo che il codice sia auto-esplicativo nei confronti delle operazioni eseguite per ottenere i risultati. Verranno trattate solo le \textit{advanced queries}.\\
+    In aggiunta a questo report è possibile trovare un breve commento alle query direttamente nel Notebook, espresso in tramite celle \textit{Markdown}.
     \subsection{Query 1}
-        Per dimostrare la correlazione tra \textit{standard deviation} ed il numero dei \textit{ratings} si è in primo luogo ottenuto il numero di valutazioni per ogni film presente nel dataset. Limitando (in 4 \textit{DataFrame} diversi) il numero di film presi in considerazione si può a questo punto vedere come la diminuzione dei campioni presi in considerazione "\textit{ammorbidisca}" la curva. I 4 \textit{DataFrame} sono:
+        Per dimostrare la correlazione tra \textit{standard deviation} ed il numero dei \textit{ratings} si è in primo luogo ottenuto il numero di valutazioni per ogni film presente nel dataset. Limitando (in 4 \textit{DataFrame} diversi) il numero di film presi in considerazione si può a questo punto vedere come la diminuzione dei campioni presi in considerazione "\textit{ammorbidisca}" gradualmente la curva nel \textit{distplot}. I 4 \textit{DataFrame} sono:
         \begin{enumerate}
             \item \textbf{1M Samples:} Prende in considerazione l'intero dataset
-            \item \textbf{100K Samples:} Prende in considerazione i primi 100.000 film del risultatio del conteggio
-            \item \textbf{100K Samples:} Prende in considerazione i primi 1.000 film del risultatio del conteggio
-            \item \textbf{100K Samples:} Prende in considerazione i primi 100 film del risultatio del conteggio
+            \item \textbf{100K Samples:} Prende in considerazione i primi 100.000 film del risultato del conteggio
+            \item \textbf{100K Samples:} Prende in considerazione i primi 1.000 film del risultato del conteggio
+            \item \textbf{100K Samples:} Prende in considerazione i primi 100 film del risultato del conteggio
         \end{enumerate}
         Il campione può essere considerato "\textit{randomico}" in quanto non viene fatto alcun tipo di ordinamento sui risultati della query, che vengono già restituiti in ordine sparso.\\
-        Dal plot dei dati la forma della distribuzione potrebbe sembrare \textbf{gaussiana}, per verificare ciò è stato eseguito uno \textbf{skewness} test su tutti e 4 i \textit{DataFrame}, dando risultati nulli o negativi. Non è quindi una distribuzione normale.\\
-        Osservando l'andamento del grafico è possibile riconoscere un andamendo iperbolico, riconducibile ad una distribuzione \textbf{paretiana}. Non avendo trovato alcun test di \textit{paretianità} già implementato è stata generata una distribuzione paretiana generica tramite il metodo \href{https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genpareto.html}{\texttt{genpareto}} di \textit{scipy}. Accostando i due grafici la somiglianza risulta evidente.
+        Considerando il \textit{distplot} dei dati la forma della distribuzione potrebbe sembrare \textbf{gaussiana}, per verificare ciò è stato eseguito uno \textbf{skewness} test su tutti e 4 i \textit{DataFrame}, dando risultati nulli o negativi. Non è quindi una distribuzione normale.\\
+        Osservando l'andamento del grafico è possibile riconoscere un andamendo iperbolico, riconducibile ad una distribuzione \textbf{paretiana}. Non avendo trovato alcun test di \textit{paretianità} già implementato è stata generata una distribuzione paretiana generica tramite il metodo \href{https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genpareto.html}{\texttt{genpareto()}} di \textit{scipy}. Accostando i due grafici la somiglianza risulta evidente.
 
     \newpage
     \subsection{Query 2}
         Per comodità nell'analisi è stato deciso di riferirsi ai quartili, quindi \texttt{N=4}, per il calcolo delle medie. Come primo passo è stata creata una \textbf{UDF} (\textit{User Defined Function}) che andasse ad etichettare ogni riga del dataset come segue:
         \begin{itemize}
             \item \textbf{Q1:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} compreso tra \textit{Aprile} e \textit{Giugno 2000}
-            \item \textbf{Q2:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} compreso tra \textit{Aprile} e \textit{Giugno 2000}
-            \item \textbf{Q3:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} compreso tra \textit{Aprile} e \textit{Giugno 2000}
+            \item \textbf{Q2:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} compreso tra \textit{Lugio} e \textit{Settembre 2000}
+            \item \textbf{Q3:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} compreso tra \textit{Ottobre} e \textit{Dicembre 2000}
             \item \textbf{Q4:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} compreso tra \textit{Gennaio} e \textit{Marzo 2001}
             \item \textbf{Remaining:} Etichetta di tutte le \textit{Row} aventi campo \texttt{Date} successivo a \textit{Aprile 2001} (compreso)
         \end{itemize}
         In seguito all'etichettatura delle \textit{Row} si è implementata un'ulteriore \textbf{UDF}, che andasse a valutare la "frequenza" nei quartili di appartenenza alla categoria \textbf{High Rated} o alla categoria \textbf{Low Rated}. Per differenzaiare le due classi si è deciso di utilizzare il voto a \textit{3 stelle} come threshold, se per la maggior parte dei quartili il film è etichettato come \textbf{High Rated} allora la sua etichetta "globale" sarà quella, \textbf{Low Rated} altrimenti.\\
         In seguito a quest'operazione, possiamo vedere che in media i film etichettati come \textbf{High Rated} sono ottengono in media il doppio delle recensioni dopo l'anno rispetto agli altri.\\
         Con la seconda cella Jupyter invece si va ad analizzare la stabilità nel numero di rating dopo l'anno.\\
-        Dallo \textit{Scatter} possiamo vedere che per entrambe le categorie c'è una tendenza all'abbandono, quasi totale per i film \textbf{Low Rated} mentre più mitigata per i film \textbf{High Rated}.\\
-        Segno evidente di questo è la grande presenza di film "apprezzati" nel range [40, 100] (pallini \textit{blu}), sono invece quasi del tutto assenti nello stesso range i film "poco apprezzati".
+        Dallo \textit{scatterplot} possiamo vedere che per entrambe le categorie c'è una tendenza all'abbandono, quasi totale per i film \textbf{Low Rated} mentre più mitigata per i film \textbf{High Rated}.\\
+        Segno evidente di questo è la grande presenza di film "apprezzati" nel range [40, 100] (pallini \textit{blu}), sono invece quasi del tutto assenti nello stesso range i film "poco apprezzati" (pallini \textit{arancioni}).
+    
+    \newpage
+    \subsection{Query 3}
+        La prima operazione necessaria per lo svolgimento dell'interrogazione è l'etichettatura dei dati per ottenere le varie categorie degli utenti, basate sul \textit{numero dei rating} da loro espressi.\\
+        Per fare ciò è stata definita una \textbf{UDF} che divide gli utenti nelle seguenti categorie:
+        \begin{itemize}
+            \item \textbf{1.} Utenti che hanno espresso al massimo 30 ratings
+            \item \textbf{2.} Utenti che hanno espresso tra i 31 ed i 100 ratings
+            \item \textbf{3.} Utenti che hanno espresso tra i 101 ed i 200 ratings
+            \item \textbf{4.} Utenti che hanno espresso oltre 200 ratings
+        \end{itemize}
+        Modificando gli estremi nei costrutti \texttt{if} all'interno del corpo della \textbf{UDF} è anche possibile adattare le categorie alle proprie esigenze, rendendo quindi possibile "personalizzare l'analisi".\\
+        In seguito a questo si sono definiti i vari \textit{DataFrame pandas} contenti le medie come segue:
+        \begin{itemize}
+            \item \textbf{all-users:} Le \textit{medie} dei ratings considerando ogni categoria d'utente esistente
+            \item \textbf{no-c4: } Le \textit{medie} dei ratings considerando solo gli utenti che hanno espresso tra 0 e 200 ratings
+            \item \textbf{no-c34: } Le \textit{medie} dei ratings considerando solo gli utenti che hanno espresso tra 0 e 100 ratings
+            \item \textbf{no-c234: } Le \textit{medie} dei ratings considerando solo gli utenti che hanno espresso tra 0 e 30 ratings
+        \end{itemize}
+        Ottenuti questi dati è stato eseguito il \textit{plotting} dei dati, dal \textit{lineplot} possiamo vedere la variazione delle medie nelle varie categorie, si può infatti notare l'aumento di valori estremi man mano che le varie categorie d'utente vengono rimosse dal dataset.\\
+        Nel secondo invece si possono confrontare le densità di probabilità delle varie categoria, sempre più simili ad una linea \textit{spezzata} rimuovendo le varie categorie.
+
+    \newpage
+    \subsection{Query 4}
+        Al fine di completare quest'interrogazione è stato negessario una grossa riorganizzazione dei dati. Questi sono stati riportati nel seguente formato, ogni cella del \textit{DataFrame} rappresenta il rating dato da un utente ad un dato film, quindi ogni entry è esprimibile come \texttt{rating[MovieID][UserID]}. Quest'operazione avviene in due parti:
+        \begin{enumerate}
+            \item Tramite pySpark ed una \textbf{UDF} ottengo un \textit{DataFrame} in cui ogni \textit{Row} è composta da uno \texttt{UserID} ed un oggetto \texttt{tuple} di \textit{Python} \texttt{(MovieID, Rating)}
+            \item Il \textit{DataFrame} del punto precedente viene esportato come \textit{DataFrame pandas}, raggruppato per utente e poi utilizzato per la creazione del \textit{DataFrame pandas} su cui andremo ad eseguire l'operazione di \textit{clustering}, organizzato come da descrizione precedente
+        \end{enumerate}
+        Non è possibile però che ogni utente avesse espresso una valutazione per ogni singolo film, i campi vuoti sono quindi stati riempiti con il valore medio tramite il metodo \texttt{mean()} dei \textit{DataFrame pandas}.\\
+        Viene a questo punto eseguito il clustering tramite l'oggetto \href{https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html}{\texttt{KMeans}} di \textit{scikit-learn}, in seguito a questo viene utilizzato l'oggetto \href{https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html}{\texttt{PCA}} per rendere \textit{plottabili} in 2 dimensioni i dati clusterizzati, ottentndo lo \textit{scatterplot} visibile alla fine del Jupyter Notebook.
 \end{document}
